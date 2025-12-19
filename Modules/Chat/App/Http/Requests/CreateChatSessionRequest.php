@@ -1,5 +1,4 @@
 <?php
-
 namespace Modules\Chat\App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -12,7 +11,7 @@ class CreateChatSessionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'meta' => 'required|array',
         ];
     }
 

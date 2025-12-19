@@ -1,5 +1,4 @@
 <?php
-
 namespace Modules\Chat\App\resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -11,6 +10,13 @@ class ChatSessionResource extends JsonResource
      */
     public function toArray($request): array
     {
-        return parent::toArray($request);
+        return [
+            'id'            => $this->id,
+            'session_uuid'  => $this->session_uuid,
+            'current_state' => $this->current_state,
+            'meta'          => $this->meta,
+            'created_at'    => $this->created_at,
+            'updated_at'    => $this->updated_at,
+        ];
     }
 }

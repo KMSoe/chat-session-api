@@ -1,8 +1,9 @@
 <?php
-
 namespace Modules\Chat\App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Modules\Chat\App\Enums\ChatSessionStates;
 
 class UpdateChatSessionRequest extends FormRequest
 {
@@ -11,8 +12,14 @@ class UpdateChatSessionRequest extends FormRequest
      */
     public function rules(): array
     {
+        $this->merge([
+            'session_uuid' => $this->route('session_uuid'),
+        ]);
+
         return [
-            //
+            'session_uuid' => 'required|exists:chat_sessions,session_uuid',
+            'state'        => ['required', Rule::in(ChatSessionStates::values())],
+            'meta'         => 'required|array|min:1',
         ];
     }
 

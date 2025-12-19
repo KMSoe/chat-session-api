@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Modules\Chat\App\Http\Controllers\ChatSessionController;
 
 /*
     |--------------------------------------------------------------------------
@@ -14,6 +14,13 @@ use Illuminate\Support\Facades\Route;
     |
 */
 
-Route::middleware(['auth:sanctum'])->prefix('v1')->name('api.')->group(function () {
-    Route::get('chat', fn (Request $request) => $request->user())->name('chat');
+Route::prefix('v1')->group(function () {
+    Route::prefix('chat-sessions')->name('chat-sessions.')->group(function () {
+        Route::get('', [ChatSessionController::class, 'index'])->name('index');
+        Route::get('/{session_uuid}', [ChatSessionController::class, 'show'])->name('show');
+        Route::post('', [ChatSessionController::class, 'store'])->name('store');
+        Route::put('/{session_uuid}', [ChatSessionController::class, 'update'])->name('update');
+        Route::delete('/{session_uuid}', [ChatSessionController::class, 'destroy'])->name('destroy');
+    });
+    Route::delete('chat-sessions-bulk-delete', [ChatSessionController::class, 'bulkDelete'])->name('chat-sessions.bulkDelete');
 });
