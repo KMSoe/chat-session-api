@@ -1,0 +1,21 @@
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH != "demo" && $CI_PIPELINE_SOURCE != "merge_request_event"
+      when: never
+    - when: always
+
+stages:
+  - deploy
+
+remote_ssh:
+  stage: deploy
+  image: registry.visibleone.app/library/gitlab-ssh-executor:1.0
+  tags:
+    - docker
+    - general
+    - pve01
+  before_script:
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+  script:
+    - ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa "$SSH_USER"@"$SSH_HOST"  "bash ~/.scripts/demoapi-ado-deploy.sh"

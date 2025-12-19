@@ -1,0 +1,401 @@
+
+<!DOCTYPE html>
+<!--
+Copyright (C) 2022 Lukas Buchs
+license https://github.com/lbuchs/WebAuthn/blob/master/LICENSE MIT
+-->
+<html>
+    <head>
+        <title>lbuchs/WebAuthn Test</title>
+        <meta charset="UTF-8">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+
+        <script>
+
+        /**
+         * creates a new FIDO2 registration
+         * @returns {undefined}
+         */
+        async function createRegistration() {
+            try {
+
+                // check browser support
+                if (!window.fetch || !navigator.credentials || !navigator.credentials.create) {
+                    throw new Error('Browser not supported.');
+                }
+
+                // get create args
+                var rep = await fetch('/webauthn/register/options');
+                const createArgs = await rep.json();
+                console.log('cre', createArgs)
+                // let rep = await window.fetch('server.php?fn=getCreateArgs' + getGetParams(), {method:'GET', cache:'no-cache'});
+                // const createArgs = await rep.json();
+
+                // error handling
+                if (createArgs.success === false) {
+                    throw new Error(createArgs.msg || 'unknown error occured');
+                }
+
+                // replace binary base64 data with ArrayBuffer. a other way to do this
+                // is the reviver function of JSON.parse()
+                recursiveBase64StrToArrayBuffer(createArgs);
+
+                // create credentials
+                const cred = await navigator.credentials.create(createArgs);
+                console.log('crd', cred.response.getTransports())
+                // create object
+                var authenticatorAttestationResponse = {
+                    transports: cred.response.getTransports  ? cred.response.getTransports() : null,
+                    clientDataJSON: cred.response.clientDataJSON  ? arrayBufferToBase64(cred.response.clientDataJSON) : null,
+                    attestationObject: cred.response.attestationObject ? arrayBufferToBase64(cred.response.attestationObject) : null
+                };
+
+                // check auth on server side
+                // rep = await window.fetch('server.php?fn=processCreate' + getGetParams(), {
+                //     method  : 'POST',
+                //     body    : JSON.stringify(authenticatorAttestationResponse),
+                //     cache   : 'no-cache'
+                // });
+                rep = await fetch('/webauthn/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        },
+                        body: JSON.stringify(authenticatorAttestationResponse)
+                    });
+        
+                // console.log('Registration successful!', authenticatorAttestationResponse['clientDataJSON']);
+                var authenticatorAttestationServerResponse = await rep.json();
+     
+                // // prompt server response
+                if (authenticatorAttestationServerResponse.success) {
+                    window.alert(authenticatorAttestationServerResponse.msg || 'registration success');
+
+                } else {
+                }
+
+            } catch (err) {
+                window.alert(err.message || 'unknown error occured');
+            }
+        }
+
+
+        /**
+         * checks a FIDO2 registration
+         * @returns {undefined}
+         */
+        async function checkRegistration() {
+            try {
+
+                if (!window.fetch || !navigator.credentials || !navigator.credentials.create) {
+                    throw new Error('Browser not supported.');
+                }
+
+                // get check args
+                // let rep = await window.fetch('server.php?fn=getGetArgs' + getGetParams(), {method:'GET',cache:'no-cache'});
+                var rep = await fetch('/webauthn/login/options');
+                let getArgs = await rep.json();
+
+                // error handling
+                if (getArgs.success === false) {
+                    throw new Error(getArgs.msg);
+                }
+
+                // replace binary base64 data with ArrayBuffer. a other way to do this
+                // is the reviver function of JSON.parse()
+                recursiveBase64StrToArrayBuffer(getArgs);
+
+                // check credentials with hardware
+                let cred = await navigator.credentials.get(getArgs);
+                console.log('cre', cred)
+                // create object for transmission to server
+                let authenticatorAttestationResponse = {
+                    id: cred.rawId ? arrayBufferToBase64(cred.rawId) : null,
+                    clientDataJSON: cred.response.clientDataJSON  ? arrayBufferToBase64(cred.response.clientDataJSON) : null,
+                    authenticatorData: cred.response.authenticatorData ? arrayBufferToBase64(cred.response.authenticatorData) : null,
+                    signature: cred.response.signature ? arrayBufferToBase64(cred.response.signature) : null,
+                    userHandle: cred.response.userHandle ? arrayBufferToBase64(cred.response.userHandle) : null
+                };
+                console.log('result',authenticatorAttestationResponse);
+                // send to server
+                 rep = await fetch('/webauthn/login', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify(authenticatorAttestationResponse)
+                        });
+                
+                const authenticatorAttestationServerResponse = await rep.json();
+
+                // check server response
+                if (authenticatorAttestationServerResponse.success) {
+                    // reloadServerPreview();
+                    window.alert(authenticatorAttestationServerResponse.msg || 'login success');
+                } else {
+                    throw new Error(authenticatorAttestationServerResponse.msg);
+                }
+
+            } catch (err) {
+                // reloadServerPreview();
+                window.alert(err.message || 'unknown error occured');
+            }
+        }
+
+        function clearRegistration() {
+            window.fetch('server.php?fn=clearRegistrations' + getGetParams(), {method:'GET',cache:'no-cache'}).then(function(response) {
+                return response.json();
+
+            }).then(function(json) {
+               if (json.success) {
+                   reloadServerPreview();
+                   window.alert(json.msg);
+               } else {
+                   throw new Error(json.msg);
+               }
+            }).catch(function(err) {
+                reloadServerPreview();
+                window.alert(err.message || 'unknown error occured');
+            });
+        }
+
+
+        function queryFidoMetaDataService() {
+            window.fetch('server.php?fn=queryFidoMetaDataService' + getGetParams(), {method:'GET',cache:'no-cache'}).then(function(response) {
+                return response.json();
+
+            }).then(function(json) {
+               if (json.success) {
+                   window.alert(json.msg);
+               } else {
+                   throw new Error(json.msg);
+               }
+            }).catch(function(err) {
+                window.alert(err.message || 'unknown error occured');
+            });
+        }
+
+        /**
+         * convert RFC 1342-like base64 strings to array buffer
+         * @param {mixed} obj
+         * @returns {undefined}
+         */
+        function recursiveBase64StrToArrayBuffer(obj) {
+            let prefix = '=?BINARY?B?';
+            let suffix = '?=';
+            if (typeof obj === 'object') {
+                for (let key in obj) {
+                    if (typeof obj[key] === 'string') {
+                        let str = obj[key];
+                        if (str.substring(0, prefix.length) === prefix && str.substring(str.length - suffix.length) === suffix) {
+                            str = str.substring(prefix.length, str.length - suffix.length);
+
+                            let binary_string = window.atob(str);
+                            let len = binary_string.length;
+                            let bytes = new Uint8Array(len);
+                            for (let i = 0; i < len; i++)        {
+                                bytes[i] = binary_string.charCodeAt(i);
+                            }
+                            obj[key] = bytes.buffer;
+                        }
+                    } else {
+                        recursiveBase64StrToArrayBuffer(obj[key]);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Convert a ArrayBuffer to Base64
+         * @param {ArrayBuffer} buffer
+         * @returns {String}
+         */
+        function arrayBufferToBase64(buffer) {
+            let binary = '';
+            let bytes = new Uint8Array(buffer);
+            let len = bytes.byteLength;
+            for (let i = 0; i < len; i++) {
+                binary += String.fromCharCode( bytes[ i ] );
+            }
+            return window.btoa(binary);
+        }
+
+        /**
+         * Get URL parameter
+         * @returns {String}
+         */
+        function getGetParams() {
+            let url = '';
+
+            url += '&apple=' + (document.getElementById('cert_apple').checked ? '1' : '0');
+            url += '&yubico=' + (document.getElementById('cert_yubico').checked ? '1' : '0');
+            url += '&solo=' + (document.getElementById('cert_solo').checked ? '1' : '0');
+            url += '&hypersecu=' + (document.getElementById('cert_hypersecu').checked ? '1' : '0');
+            url += '&google=' + (document.getElementById('cert_google').checked ? '1' : '0');
+            url += '&microsoft=' + (document.getElementById('cert_microsoft').checked ? '1' : '0');
+            url += '&mds=' + (document.getElementById('cert_mds').checked ? '1' : '0');
+
+            url += '&requireResidentKey=' + (document.getElementById('requireResidentKey').checked ? '1' : '0');
+
+            url += '&type_usb=' + (document.getElementById('type_usb').checked ? '1' : '0');
+            url += '&type_nfc=' + (document.getElementById('type_nfc').checked ? '1' : '0');
+            url += '&type_ble=' + (document.getElementById('type_ble').checked ? '1' : '0');
+            url += '&type_int=' + (document.getElementById('type_int').checked ? '1' : '0');
+            url += '&type_hybrid=' + (document.getElementById('type_hybrid').checked ? '1' : '0');
+
+            url += '&fmt_android-key=' + (document.getElementById('fmt_android-key').checked ? '1' : '0');
+            url += '&fmt_android-safetynet=' + (document.getElementById('fmt_android-safetynet').checked ? '1' : '0');
+            url += '&fmt_apple=' + (document.getElementById('fmt_apple').checked ? '1' : '0');
+            url += '&fmt_fido-u2f=' + (document.getElementById('fmt_fido-u2f').checked ? '1' : '0');
+            url += '&fmt_none=' + (document.getElementById('fmt_none').checked ? '1' : '0');
+            url += '&fmt_packed=' + (document.getElementById('fmt_packed').checked ? '1' : '0');
+            url += '&fmt_tpm=' + (document.getElementById('fmt_tpm').checked ? '1' : '0');
+
+            url += '&rpId=' + encodeURIComponent(document.getElementById('rpId').value);
+
+            url += '&userId=' + encodeURIComponent(document.getElementById('userId').value);
+            url += '&userName=' + encodeURIComponent(document.getElementById('userName').value);
+            url += '&userDisplayName=' + encodeURIComponent(document.getElementById('userDisplayName').value);
+
+            if (document.getElementById('userVerification_required').checked) {
+                url += '&userVerification=required';
+
+            } else if (document.getElementById('userVerification_preferred').checked) {
+                url += '&userVerification=preferred';
+
+            } else if (document.getElementById('userVerification_discouraged').checked) {
+                url += '&userVerification=discouraged';
+            }
+
+            return url;
+        }
+
+        function reloadServerPreview() {
+            let iframe = document.getElementById('serverPreview');
+            iframe.src = iframe.src;
+        }
+
+        function setAttestation(attestation) {
+            let inputEls = document.getElementsByTagName('input');
+            for (const inputEl of inputEls) {
+                if (inputEl.id && inputEl.id.match(/^(fmt|cert)\_/)) {
+                    inputEl.disabled = !attestation;
+                }
+                if (inputEl.id && inputEl.id.match(/^fmt\_/)) {
+                    inputEl.checked = attestation ? inputEl.id !== 'fmt_none' : inputEl.id === 'fmt_none';
+                }
+                if (inputEl.id && inputEl.id.match(/^cert\_/)) {
+                    inputEl.checked = attestation ? inputEl.id === 'cert_mds' : false;
+                }
+            }
+        }
+
+        /**
+         * force https on load
+         * @returns {undefined}
+         */
+        window.onload = function() {
+            if (!window.isSecureContext && location.protocol !== 'https:') {
+                location.href = location.href.replace('http://', 'https://');
+            }
+            if (!document.getElementById('rpId').value) {
+                document.getElementById('rpId').value = location.hostname;
+            }
+
+            if (!document.getElementById('attestation_yes').checked) {
+                setAttestation(false);
+            }
+        }
+
+        </script>
+        <style>
+            body {
+                font-family:sans-serif;
+                margin: 0 20px;
+                padding: 0;
+            }
+            .splitter {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                margin: 0;
+                padding: 0;
+            }
+            .splitter > .form {
+                flex: 1;
+                min-width: 600px;
+            }
+            .splitter > .serverPreview {
+                width: 740px;
+                min-height: 700px;
+                margin: 0;
+                padding: 0;
+                border: 1px solid grey;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .splitter > .serverPreview iframe {
+                width: 700px;
+                flex: 1;
+                border: 0;
+            }
+
+            .coffee {
+                display: flex;
+                flex-direction: row;
+                margin: 10px 0;
+            }
+            .coffee > div {
+                width: 34px;
+                height: 34px;
+                text-align: center;
+                line-height: 34px;
+                background-color: orange;
+                border-radius: 17px;
+                font-weight: bold;
+                z-index: 9;
+            }
+            .coffee > a {
+                height: 30px;
+                line-height: 30px;
+                border: 2px solid orange;
+                background-color: #ffcf7a;
+                margin-left: -15px;
+                padding: 0 20px 0 20px;
+                z-index: 8;
+                color: black;
+                text-decoration: none;
+                border-radius: 0 17px 17px 0;
+                transition: background-color 0.5s ease-in;
+            }
+            .coffee > a:hover {
+                background-color: orange;
+            }
+
+        </style>
+    </head>
+    <body>
+        <h1 style="margin: 40px 10px 2px 0;">lbuchs/WebAuthn</h1>
+        <div style="font-style: italic;">A simple PHP WebAuthn (FIDO2) server library.</div>
+        <div class="splitter">
+            <div class="form">
+               <div>
+                    <div>&nbsp;</div>
+                    <table>
+                        <tbody><tr>
+                                <td>
+                                    <button type="button" onclick="createRegistration()">&#10133; new registration</button>
+                                </td>
+                                <td>
+                                    <button type="button" onclick="checkRegistration()">&#10068; check registration</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+        <div>
+    </body>
+</html>

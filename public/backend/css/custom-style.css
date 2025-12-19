@@ -1,0 +1,120 @@
+.sidebar-text {
+    color: #ffffff !important;
+}
+
+.sidebar-title-text {
+    color: #9ECEFF !important;
+}
+
+.sticky {
+    position: sticky !important;
+    right: 0;
+}
+
+.filter-style {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.filter-section {
+    display: flex;
+    align-items: center;
+}
+
+.inputWithIcon {
+    position: relative;
+}
+
+input[type="text"]:focus {
+    border-color: dodgerBlue;
+    box-shadow: 0 0 8px 0 dodgerBlue;
+}
+
+.inputWithIcon input[type="text"] {
+    padding-left: 40px;
+}
+
+.inputWithIcon {
+    position: relative;
+}
+
+.inputWithIcon i {
+    position: absolute;
+    left: 0;
+    top: 8px;
+    padding: 6px 10px 6px 10px;
+    color: #aaa;
+    transition: 0.3s;
+}
+
+.inputWithIcon input[type="text"]:focus+i {
+    color: dodgerBlue;
+}
+
+.inputWithIcon.inputIconBg i {
+    background-color: #aaa;
+    color: #fff;
+    padding: 9px 4px;
+    border-radius: 4px 0 0 4px;
+}
+
+.inputWithIcon.inputIconBg input[type="text"]:focus+i {
+    color: #fff;
+    background-color: dodgerBlue;
+}
+
+.blog-check {
+    border-radius: 0;
+    background-color: #EFF2F5;
+}
+
+.border {
+    border: 1px solid #E4E6EF;
+    max-width: 95%;
+    margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.page-radio {
+    background-color: #EFF2F5;
+}
+
+.bullet-dash {
+    height: 1px;
+}
+
+thead {
+    background: #19305c;
+}
+
+.mycard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1px solid rgba(45, 53, 60, .15);
+    border-radius: 4px;
+    margin-top: 1.25rem;
+}
+.mycard-header {
+    padding: 15px 15px;
+    margin-bottom: 0;
+    background-color: #f2f4f5;
+    border-bottom: 1px solid rgba(45, 53, 60, .15);
+}
+.mycard-body {
+    flex: 1 1 auto;
+    min-height: 1px;
+    padding: 15px;
+}
+
+th.sticky {
+    background: #000;
+}
+td.sticky {
+    background: #fff;
+}

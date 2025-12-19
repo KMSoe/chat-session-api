@@ -1,0 +1,121 @@
+<?php
+namespace App\Enums;
+
+enum TableView: int {
+    case Employee                  = 1;
+    case Attendance                = 2;
+    case Shift                     = 3;
+    case Late_Request              = 4;
+    case Group                     = 5;
+    case Department                = 6;
+    case Designation               = 7;
+    case Location                  = 8;
+    case Branch                    = 9;
+    case Module                    = 10;
+    case Attribute                 = 11;
+    case Checklist_Template        = 12;
+    case Checklist_Template_Item   = 13;
+    case EXIT_FORM                 = 14;
+    case Leave_Types               = 15;
+    case Leave_Type_Configurations = 16;
+    case Leave_Request             = 17;
+    case Leave_Balance_Adjustments = 18;
+    case PASSWORD                  = 19;
+    case ANNOUNCEMENT              = 20;
+    case CLAIM_TYPE                = 21;
+    case CLAIM_FORM                = 22;
+    case MONITORING                = 23;
+    case EMPLOYEE_DEVICE           = 24;
+    case Over_Time_Setting         = 25;
+    case Over_Time                 = 26;
+    case Duty_Roster_Template      = 27;
+    case Duty_Roster               = 28;
+    case PAYROLL_COMPONENT         = 29;
+    case PAYROLL_DEFINITION        = 30;
+    case FILING                    = 31;
+    case TAX_CALCULATION           = 32;
+    case PAYROLL_POLICY            = 33;
+    case PAYROLL_SLIP_TEMPLATE     = 34;
+    case APPROVAL_FLOW             = 35;
+    case DOCUMENT                  = 36;
+    case TAG                       = 37;
+    case ROLE                      = 38;
+    case PAYROLL                   = 39;
+    case CONTACT                   = 40;
+    case COMPANY                   = 41;
+    case ADW_OPENING_BALANCE       = 42;
+    case PROJECT                   = 43;
+    case TASK                      = 44;
+    case CALENDAR                  = 45;
+    case EVENT                     = 46;
+    case ITEM_TYPE                 = 47;
+    case ITEM                      = 48;
+    case ATTRIBUTE_SET             = 49;
+    case TAX                       = 50;
+    case ITEM_TEMPLATE             = 51;
+    case QUOTATION                 = 52;
+    case PAYMENT_TERM              = 53;
+    case INVOICE                   = 54;
+    case RECURRING_INVOICE         = 55;
+    case CREDIT_NOTE               = 56;
+    case PAYMENT_RECEIVED          = 57;
+
+    public static function fromName(string $name): ?self
+    {
+        return match (strtolower($name)) {
+            'employee'                  => self::Employee,
+            'attendance'                => self::Attendance,
+            'shift'                     => self::Shift,
+            'late_request'              => self::Late_Request,
+            'group'                     => self::Group,
+            'department'                => self::Department,
+            'designation'               => self::Designation,
+            'location'                  => self::Location,
+            'branch'                    => self::Branch,
+            'module'                    => self::Module,
+            'attribute'                 => self::Attribute,
+            'checklist_template'        => self::Checklist_Template,
+            'checklist_template_item'   => self::Checklist_Template_Item,
+            'leave_types'               => self::Leave_Types,
+            'leave_type_configurations' => self::Leave_Type_Configurations,
+            'leave_request'             => self::Leave_Request,
+            'leave_balance_adjustments' => self::Leave_Balance_Adjustments,
+            'password'                  => self::PASSWORD,
+            'announcement'              => self::ANNOUNCEMENT,
+            'claim_type'                => self::CLAIM_TYPE,
+            'claim_form'                => self::CLAIM_FORM,
+            'monitoring'                => self::MONITORING,
+            'employee_device'           => self::EMPLOYEE_DEVICE,
+            'over_time_setting'         => self::Over_Time_Setting,
+            'over_time'                 => self::Over_Time,
+            'duty_roster_template'      => self::Duty_Roster_Template,
+            'duty_roster'               => self::Duty_Roster,
+            'payroll_component'         => self::PAYROLL_COMPONENT,
+            'payroll_definition'        => self::PAYROLL_DEFINITION,
+            'filing'                    => self::FILING,
+            'tax_calculation'           => self::TAX_CALCULATION,
+            'payroll_policy'            => self::PAYROLL_POLICY,
+            'payroll_slip_template'     => self::PAYROLL_SLIP_TEMPLATE,
+            'approval_flow'             => self::APPROVAL_FLOW,
+            'contact'                   => self::CONTACT,
+            'company'                   => self::COMPANY,
+            'awd_opening_balance'       => self::ADW_OPENING_BALANCE,
+            'project'                   => self::PROJECT,
+            'task'                      => self::TASK,
+            'calendar'                  => self::CALENDAR,
+            'event'                     => self::EVENT,
+            'item_type'                 => self::ITEM_TYPE,
+            'item'                      => self::ITEM,
+            'attribute_set'             => self::ATTRIBUTE_SET,
+            'tax'                       => self::TAX,
+            'item_template'             => self::ITEM_TEMPLATE,
+            'quotation'                 => self::QUOTATION,
+            'payment_term'              => self::PAYMENT_TERM,
+            'invoice'                   => self::INVOICE,
+            'recurring_invoice'         => self::RECURRING_INVOICE,
+            'credit_note'               => self::CREDIT_NOTE,
+            'payment_received'          => self::PAYMENT_RECEIVED,
+            default                     => 0,
+        };
+    }
+}
