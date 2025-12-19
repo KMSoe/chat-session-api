@@ -3,6 +3,7 @@ namespace Modules\Chat\App\Repositories;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Modules\Chat\App\Enums\ChatSessionStates;
 use Modules\Chat\App\Models\ChatSession;
 use Modules\Chat\App\resources\ChatSessionResource;
 

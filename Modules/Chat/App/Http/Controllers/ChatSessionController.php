@@ -44,7 +44,7 @@ class ChatSessionController extends Controller
         return response()->json([
             'status'  => true,
             'data'    => [
-                'chat_session' => new ChatSessionResource($chat_session),
+                'chat_session' => new ChatSessionResource($this->service->findBySessionUuid($chat_session->session_uuid)),
             ],
             'message' => 'Successfully Saved',
         ], Response::HTTP_CREATED);
