@@ -75,7 +75,7 @@ class Handler extends ExceptionHandler
 
                 if ($e instanceof HttpException) {
                     return response()->json([
-                        'success' => false,
+                        'status' => false,
                         'message' => $e->getMessage(),
                     ], $e->getStatusCode());
                 }
